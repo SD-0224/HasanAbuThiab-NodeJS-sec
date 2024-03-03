@@ -91,8 +91,13 @@ app.post('/create', async (req, res) => {
         if (!filename) {
             return res.status(400).json({ error: 'filename is required' });
         }
+        
+        if (!/^[a-zA-Z0-9_-]+$/.test(filename)) {
+            return res.status(400).json({ error: 'Invalid characters in filename. Only alphanumeric, underscore, and hyphen are allowed.' });
+        }
+        const fixedFileName = `${filename}.txt`;
 
-        const filePath = path.join(__dirname, 'Data', filename);
+        const filePath = path.join(__dirname, 'Data', fixedFileName);
 
         // Check if the file already exists
         const fileExists = await fs.promises.access(filePath).then(() => true).catch(() => false);
@@ -106,8 +111,16 @@ app.post('/create', async (req, res) => {
 
         res.status(200).json({ message: 'File created successfully' });
     } catch (error) {
-        console.error('Error creating file:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        if (error.code === 'ENOENT') {
+            // Handle file not found (e.g., invalid path)
+            return res.status(404).json({ error: 'File not found' });
+        } else if (error.code === 'EACCES' || error.code === 'EPERM') {
+            // Handle permission issues
+            return res.status(403).json({ error: 'Permission denied' });
+        } else {
+            // Handle other errors
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 });
 
