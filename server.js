@@ -38,6 +38,19 @@ app.get('/', (req, res) => {
     res.render('index', { files });
 });
 
+app.get('/details/:fileName', (req, res) => {
+    const fileName = req.params.fileName;
+    const filePath = path.join(__dirname, 'Data', fileName);
+
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        res.render('details', { fileName, content });
+    } catch (error) {
+        console.error(`Error reading file ${fileName}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.listen (port, () =>
 {
     console.log(`Server running on port http://localhost:${port}`);

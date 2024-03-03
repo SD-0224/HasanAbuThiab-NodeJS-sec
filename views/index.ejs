@@ -11,7 +11,7 @@
     <ul>
         <% files.forEach(file => { %>
             <li>
-                <%= file %>
+                <a href="/details/<%= file %>"><%= file %></a>
                 <input type="text" class="filename-input" id="filename_<%= file %>" placeholder="New Filename">
                     
                 <button>Update</button>
