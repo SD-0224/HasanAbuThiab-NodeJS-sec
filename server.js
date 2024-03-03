@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs =  require('fs');
 const morgan = require('morgan');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = 3000;
@@ -27,11 +28,14 @@ morgan.token('custom', (req, res) => {
 
 // Setup morgan middleware with the custom format
 app.use(morgan(':custom', { stream: accessLogStream }));
+// Setup body parser 
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+//GET endpoint that fetches the list of files and render them into a template 
 app.get('/', async (req, res) => {
     try {
         const directoryPath = path.join(__dirname, 'Data');
@@ -52,6 +56,8 @@ app.get('/', async (req, res) => {
         }
     }
 });
+
+//GET endpoint that fetches the details of a file and renders it into the template
 app.get('/details/:fileName', async (req, res) => {
     const fileName = req.params.fileName;
 
@@ -73,14 +79,45 @@ app.get('/details/:fileName', async (req, res) => {
         }
     }
 });
+app.get('/create', (req, res) => {
+    res.render('create');
+});
 
+//Post endpoint that creates file in the Data folder from the body of the request
+app.post('/create', async (req, res) => {
+    try {
+        const { filename, content } = req.body;
 
+        if (!filename) {
+            return res.status(400).json({ error: 'filename is required' });
+        }
+
+        const filePath = path.join(__dirname, 'Data', filename);
+
+        // Check if the file already exists
+        const fileExists = await fs.promises.access(filePath).then(() => true).catch(() => false);
+
+        if (fileExists) {
+            return res.status(400).json({ error: 'A file with the same name already exists' });
+        }
+
+        // Write the content to the file
+        await fs.promises.writeFile(filePath, content, 'utf-8');
+
+        res.status(200).json({ message: 'File created successfully' });
+    } catch (error) {
+        console.error('Error creating file:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+//Error handling middleware 
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
-
+//App listener
 app.listen (port, () =>
 {
     console.log(`Server running on port http://localhost:${port}`);
