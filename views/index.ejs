@@ -15,11 +15,14 @@
                 <input type="text" class="filename-input" id="filename_<%= file %>" placeholder="New Filename">
                     
                 <button>Update</button>
-                <button>Delete</button>
+                <button onclick="deleteFile('<%= file %>')">Delete</button>
+
             </li>
         <% }); %>
     </ul>
     <a href="/create"><button>Create New File</button></a>
 
 </body>
+<script src="/scripts.js"></script>
+
 </html>
