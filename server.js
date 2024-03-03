@@ -32,25 +32,25 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     try {
-    const directoryPath = path.join(__dirname, 'Data');
-    const files = fs.readdirSync(directoryPath).filter(file => path.extname(file) === '.txt');
-    res.render('index', { files });
-    }
-    catch (error) {
-        console.error("Error rendering index: " + error.message);
+        const directoryPath = path.join(__dirname, 'Data');
+        const files = await fs.promises.readdir(directoryPath); 
+        const txtFiles = files.filter(file => path.extname(file) === '.txt');
+        res.render('index', { files: txtFiles });
+    } catch (error) {
+        console.error('Error rendering index page:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-app.get('/details/:fileName', (req, res) => {
+app.get('/details/:fileName', async (req, res) => {
     const fileName = req.params.fileName;
-    const filePath = path.join(__dirname, 'Data', fileName);
 
     try {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        res.render('details', { fileName, content });
+        const filePath = path.join(__dirname, 'Data', fileName);
+        console.log(filePath);
+        const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+        res.render('details', { fileName, content: fileContent });
     } catch (error) {
         console.error(`Error reading file ${fileName}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
