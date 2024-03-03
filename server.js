@@ -15,14 +15,14 @@ morgan.token('custom', (req, res) => {
     const formattedDate = now.toISOString().slice(0, 10);
     const formattedTime = now.toTimeString().split(' ')[0];
 
-    // Get the route path
-    const route = req.route ? req.route.path : 'Unknown';
+    // Get the requested URL
+    const requestUrl = req.originalUrl || req.url;
 
     // Get the error information
     const errorType = res.locals.errorType || 'None';
     const errorDescription = res.locals.errorDescription || 'None';
 
-    return `${formattedDate} ${formattedTime} | ${res.statusCode} | Error: ${errorType} - ${errorDescription} | Route: ${route}`;
+    return `${formattedDate} ${formattedTime} | ${res.statusCode} | Error: ${errorType} - ${errorDescription} | Request URL: ${requestUrl}`;
 });
 
 // Setup morgan middleware with the custom format
