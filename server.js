@@ -33,9 +33,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.get('/', (req, res) => {
+    try {
     const directoryPath = path.join(__dirname, 'Data');
     const files = fs.readdirSync(directoryPath).filter(file => path.extname(file) === '.txt');
     res.render('index', { files });
+    }
+    catch (error) {
+        console.error("Error rendering index: " + error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 app.get('/details/:fileName', (req, res) => {
@@ -50,6 +56,13 @@ app.get('/details/:fileName', (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
+
 
 app.listen (port, () =>
 {
