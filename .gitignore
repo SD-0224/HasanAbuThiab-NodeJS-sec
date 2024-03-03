@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Dependency directories
+/jspm_packages/
+/bower_components/
+
+# Distribution directories
+/dist/
+/out/
+/build/
+
+# dotenv environment variable file
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# User-specific files
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Debugging / Profiling
+chrome-profile/
+*.swp
+*.un~
+*.bak
+*.d
+*.pyc
+*.db
+
+# IDE files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
