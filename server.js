@@ -40,7 +40,16 @@ app.get('/', async (req, res) => {
         res.render('index', { files: txtFiles });
     } catch (error) {
         console.error('Error rendering index page:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+
+        if (error.code === 'ENOENT') {
+            // 'Data' directory or files not found, send a 404 Not Found response
+            console.log('Data directory or files not found');
+            res.status(404).json({ error: 'Data directory or files not found' });
+        } else {
+            // Other errors
+            console.error('Unhandled error:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 });
 app.get('/details/:fileName', async (req, res) => {
@@ -52,8 +61,16 @@ app.get('/details/:fileName', async (req, res) => {
         const fileContent = await fs.promises.readFile(filePath, 'utf-8');
         res.render('details', { fileName, content: fileContent });
     } catch (error) {
-        console.error(`Error reading file ${fileName}: ${error.message}`);
-        res.status(500).json({ error: 'Internal Server Error' });
+
+        if (error.code === 'ENOENT') {
+            // File doesn't exist, send a 404 Not Found response
+            console.log('File Not Found');
+            res.status(404).json({ error: 'File Not Found' });
+        } else {
+            // Other errors
+            console.error('Error in details endpoint:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 });
 
