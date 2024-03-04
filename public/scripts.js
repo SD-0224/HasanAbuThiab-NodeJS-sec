@@ -8,8 +8,8 @@ async function deleteFile(filename) {
             throw new Error(`File not found. It may have been deleted by another user.`);
         }
 
-        // Update the UI directly (e.g., remove the deleted file from the list)
-        document.getElementById(`filename_${filename}`).closest('li').remove();
+        location.reload();
+
     } catch (error) {
         console.error('Error deleting file:', error.message);
     }
