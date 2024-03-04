@@ -1,48 +1,48 @@
-     /* (Your existing styles remain unchanged) */
-     body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f0f0f0;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
+/* (Your existing styles remain unchanged) */
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f0f0f0;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
 
-    header {
-        background-color: #3498db;
-        color: white;
-        text-align: center;
-        padding: 1em;
-    }
+header {
+  background-color: #3498db;
+  color: white;
+  text-align: center;
+  padding: 1em;
+}
 
-    h1 {
-        margin-bottom: 0;
-    }
+h1 {
+  margin-bottom: 0;
+}
 
-    main {
-        margin: 20px;
-    }
+main {
+  margin: 20px;
+}
 
-    label {
-        display: block;
-        margin-bottom: 5px;
-    }
+label {
+  display: block;
+  margin-bottom: 5px;
+}
 
-    textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #3498db;
-        border-radius: 3px;
-        resize: vertical;
-    }
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #3498db;
+  border-radius: 3px;
+  resize: vertical;
+}
 
-    a {
-        display: block;
-        margin-top: 20px;
-        color: #3498db;
-        text-decoration: none;
-    }
+a {
+  display: block;
+  margin-top: 20px;
+  color: #3498db;
+  text-decoration: none;
+}
 
-    /* Additional styles for the back link */
-    a:hover {
-        color: #2980b9;
-    }
+/* Additional styles for the back link */
+a:hover {
+  color: #2980b9;
+}

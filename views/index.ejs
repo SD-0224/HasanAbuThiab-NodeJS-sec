@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File List</title>
-    <link rel="stylesheet" href="/styles/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
     <h1>List of Text Files</h1>
     <ul>
-        <% files.forEach(file => { %>
-            <li>
-                <a href="/details/<%= file %>"><%= file %></a>
-                <input type="text" class="filename-input" id="filename_<%= file %>" placeholder="New Filename">
-                    
-                <a href="/update/<%= file %>"><button>Update</button></a>
-                <button onclick="deleteFile('<%= file %>')">Delete</button>
-
-            </li>
-        <% }); %>
+      <% files.forEach(file => { %>
+      <li>
+        <a href="/details/<%= file %>"><%= file %></a>
+        <a href="/update/<%= file %>"><button>Update</button></a>
+        <button onclick="deleteFile('<%= file %>')">Delete</button>
+      </li>
+      <% }); %>
     </ul>
     <a href="/create"><button>Create New File</button></a>
-
-</body>
-<script src="/scripts.js"></script>
-
+  </body>
+  <script src="/scripts.js"></script>
 </html>

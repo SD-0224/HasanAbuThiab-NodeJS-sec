@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Update File</title>
-    <link rel="stylesheet" href="/styles/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
     <h1>Update File</h1>
     <form id="updateForm">
-        <label for="newFilename">New Filename:</label>
-        <input type="text" id="newFilename" name="newFilename" required>
-        <button type="button" onclick="updateFile('<%= filename %>')">Update</button>
+      <label for="newFilename">New Filename:</label>
+      <input type="text" id="newFilename" name="newFilename" required />
+      <button type="button" onclick="updateFile('<%= filename %>')">
+        Update
+      </button>
     </form>
-</body>
-<script src="/scripts.js"></script>
+  </body>
+  <script src="/scripts.js"></script>
 </html>
