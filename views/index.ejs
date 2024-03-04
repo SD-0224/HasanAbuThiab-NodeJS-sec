@@ -14,7 +14,7 @@
                 <a href="/details/<%= file %>"><%= file %></a>
                 <input type="text" class="filename-input" id="filename_<%= file %>" placeholder="New Filename">
                     
-                <button>Update</button>
+                <a href="/update/<%= file %>"><button>Update</button></a>
                 <button onclick="deleteFile('<%= file %>')">Delete</button>
 
             </li>

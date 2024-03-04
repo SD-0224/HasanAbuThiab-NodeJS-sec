@@ -157,9 +157,67 @@ app.delete('/delete/:filename', async (req, res) => {
         }
     }
 });
+//Render update form
+app.get('/update/:filename', (req, res) => {
+    const filename = req.params.filename;
 
+    try {
+        // Render the update.ejs page with the filename
+        res.render('update', { filename: filename });
+    } catch (error) {
+        console.error('Error rendering update page:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+//Update Filename from body request
+app.put('/update/:filename', async (req, res) => {
 
+    console.log('received')
+    try {
+        const { newFilename } = req.body;
+        const filename = req.params.filename;
 
+        // Checks if the new filename is entered
+        if (!newFilename) {
+            return res.status(400).json({ error: 'New filename is required' });
+        }
+
+        // Checks for special characters in the new filename and appends .txt extension
+        if (!/^[a-zA-Z0-9_-]+$/.test(newFilename)) {
+            throw { specialError: true, message: 'Special characters in filename. Only alphanumeric, underscore, and hyphen are allowed.' };
+        }
+        const fixedNewFilename = `${newFilename}.txt`;
+
+        const filePath = path.join(__dirname, 'Data', filename);
+        const newFilePath = path.join(__dirname, 'Data', fixedNewFilename);
+        await fs.promises.access(filePath).then(() => true).catch(() => false);
+
+        // Rename the file
+        await fs.promises.rename(filePath, newFilePath);
+
+        res.status(200).json({ message: 'File updated successfully' });
+    } catch (error) {
+        if (error.specialError) {
+            // Handle special character error
+            console.error('Special characters in new filename');
+            return res.status(400).json({ error: error.message });
+        } else if (error.code === 'ENOENT') {
+            // Handle file not found (e.g., invalid path)
+            return res.status(404).json({ error: 'File not found' });
+        } else if (error.code === 'EEXIST') {
+            // New filename already exists, send a 400 Bad Request response
+            console.error('A file with the new name already exists');
+            return res.status(400).json({ error: 'A file with the new name already exists' });
+        } else if (error.code === 'EACCES' || error.code === 'EPERM') {
+            // Handle permission issues
+            return res.status(403).json({ error: 'Permission denied' });
+        } else {
+            // Handle other errors
+            console.error('Error updating file:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+});
 //Error handling middleware 
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
