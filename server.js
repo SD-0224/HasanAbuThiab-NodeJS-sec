@@ -6,8 +6,11 @@ const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 const { body, validationResult } = require("express-validator");
 
+//Use Express and delcare port
 const app = express();
 const port = 3000;
+
+//Use methodoverride for delete/put
 app.use(methodOverride("_method"));
 
 const accessLogStream = fs.createWriteStream(
@@ -46,8 +49,11 @@ app.use(morgan(":custom", { stream: accessLogStream }));
 // Setup body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+//Use EJS as viewport
 app.set("view engine", "ejs");
 
+//Use styles and public
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
 
@@ -72,7 +78,7 @@ const updateFileValidator = [
     ),
 ];
 
-
+// Fettch index render and render the list of data
 app.get("/", async (req, res, next) => {
   try {
     const directoryPath = path.join(__dirname, "Data");
@@ -99,12 +105,12 @@ app.get("/details/:fileName", async (req, res, next) => {
     next(error);
   }
 });
-app.get("/create", (req, res) => {
-  try{
-    res.render("create");
 
-  }
-  catch(error){
+//Render create page content
+app.get("/create", (req, res) => {
+  try {
+    res.render("create");
+  } catch (error) {
     console.log(error);
     next(error);
   }
@@ -114,7 +120,9 @@ app.get("/create", (req, res) => {
 app.post("/create", createFileValidator, async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array().map(error => error.msg) });
+    return res
+      .status(400)
+      .json({ errors: errors.array().map((error) => error.msg) });
   }
 
   try {
@@ -187,24 +195,24 @@ app.put("/update/:filename", updateFileValidator, async (req, res, next) => {
   }
 });
 //Download file endpoint
-app.get('/download/:filename', async (req, res, next) => {
+app.get("/download/:filename", async (req, res, next) => {
   const filename = req.params.filename;
 
   try {
-    const filePath = path.join(__dirname, 'Data', filename);
+    const filePath = path.join(__dirname, "Data", filename);
 
     // Check if the file exists
     await fs.promises.access(filePath);
 
     // Set appropriate headers for file download
-    res.setHeader('Content-disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-type', 'text/plain'); // Adjust the content type based on your file type
+    res.setHeader("Content-disposition", `attachment; filename=${filename}`);
+    res.setHeader("Content-type", "text/plain"); // Adjust the content type based on your file type
 
     // Create a readable stream from the file and pipe it to the response
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
   } catch (error) {
-    console.error('Error downloading file:', error);
+    console.error("Error downloading file:", error);
     // Handle other errors
     next(error);
   }
