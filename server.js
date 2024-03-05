@@ -16,31 +16,29 @@ const accessLogStream = fs.createWriteStream(
 
 // Custom format function for morgan
 morgan.token("custom", (req, res) => {
-    // Format the date and time
-    const now = new Date();
-    const formattedDate = now.toISOString().slice(0, 10);
-    const formattedTime = now.toTimeString().split(" ")[0];
-  
-    // Get the requested URL
-    const requestUrl = req.originalUrl || req.url;
-  
-    // Get the error information
-    const errorType = res.locals.errorType || "None";
-    const errorDescription = res.locals.errorDescription || "None";
-  
+  // Format the date and time
+  const now = new Date();
+  const formattedDate = now.toISOString().slice(0, 10);
+  const formattedTime = now.toTimeString().split(" ")[0];
 
-  
-    // Build the log string
-    let logString = `${formattedDate} ${formattedTime} | ${res.statusCode} | Error: ${errorType} - ${errorDescription}| Request URL: ${requestUrl}`;
-  
-    // Check if there is a full error message
-    if (res.locals.fullError) {
-      // Add a new line and the full error message
-      logString += `\nFull Error: ${res.locals.fullError}`;
-    }
-  
-    return logString;
-  });
+  // Get the requested URL
+  const requestUrl = req.originalUrl || req.url;
+
+  // Get the error information
+  const errorType = res.locals.errorType || "None";
+  const errorDescription = res.locals.errorDescription || "None";
+
+  // Build the log string
+  let logString = `${formattedDate} ${formattedTime} | ${res.statusCode} | Error: ${errorType} - ${errorDescription}| Request URL: ${requestUrl}`;
+
+  // Check if there is a full error message
+  if (res.locals.fullError) {
+    // Add a new line and the full error message
+    logString += `\nFull Error: ${res.locals.fullError}`;
+  }
+
+  return logString;
+});
 
 // Setup morgan middleware with the custom format
 app.use(morgan(":custom", { stream: accessLogStream }));
@@ -51,8 +49,6 @@ app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
-
-
 
 //GET endpoint that fetches the list of files and render them into a template
 app.get("/", async (req, res, next) => {
@@ -82,7 +78,14 @@ app.get("/details/:fileName", async (req, res, next) => {
   }
 });
 app.get("/create", (req, res) => {
-  res.render("create");
+  try{
+    res.render("create");
+
+  }
+  catch(error){
+    console.log(error);
+    next(error);
+  }
 });
 
 //Post endpoint that creates file in the Data folder from the body of the request
@@ -109,7 +112,7 @@ app.post("/create", async (req, res, next) => {
 
     res.redirect("/");
   } catch (error) {
-    console.log('Error creating file');
+    console.log("Error creating file");
     next(error);
   }
 });
@@ -176,7 +179,29 @@ app.put("/update/:filename", async (req, res, next) => {
 
     res.status(200).json({ message: "File updated successfully" });
   } catch (error) {
-    
+    next(error);
+  }
+});
+//Download file endpoint
+app.get('/download/:filename', async (req, res, next) => {
+  const filename = req.params.filename;
+
+  try {
+    const filePath = path.join(__dirname, 'Data', filename);
+
+    // Check if the file exists
+    await fs.promises.access(filePath);
+
+    // Set appropriate headers for file download
+    res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-type', 'text/plain'); // Adjust the content type based on your file type
+
+    // Create a readable stream from the file and pipe it to the response
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    // Handle other errors
     next(error);
   }
 });
@@ -184,45 +209,44 @@ app.put("/update/:filename", async (req, res, next) => {
 //Error handling middlewares
 
 app.use((error, req, res, next) => {
-    switch (true) {
-        case error.specialError:
-          // Handle special character error
-          res.locals.errorType = "Special Character Error";
-          res.locals.errorDescription = error.message;
-          break;
+  switch (true) {
+    case error.specialError:
+      // Handle special character error
+      res.locals.errorType = "Special Character Error";
+      res.locals.errorDescription = error.message;
+      break;
 
-        case error.code === "EMOENT":
-        res.locals.errorType = "File Doesnt exist Error";
-        res.locals.errorDescription = "file Doesnt exist ";
-        res.status(404).json({ error: "File Not Found" });
-        break;
-    
-        case error.code === "EEXIST":
-          // File already exists, send a 400 Bad Request response
-          res.locals.errorType = "File Exists Error";
-          res.locals.errorDescription = "A file with the same name already exists";
-          break;
-    
-    
-        case error.code === "EACCES" || error.code === "EPERM":
-          // Handle permission issues
-          res.status(403).json({ error: "Permission Denied" });
-          res.locals.errorType = "Permission Denied Error";
-          res.locals.errorDescription = "Permission Denied";
-          break;
-    
-        default:
-          // Other errors
-          res.status(500).json({ error: "Internal Server Error" });
+    case error.code === "EMOENT":
+      res.locals.errorType = "File Doesnt exist Error";
+      res.locals.errorDescription = "file Doesnt exist ";
+      res.status(404).json({ error: "File Not Found" });
+      break;
 
-          res.locals.errorType = "Internal Server Error";
-          res.locals.errorDescription = "Unhandled error";
-          break;
-      }
-    
-      res.locals.fullError = error.stack || error.message;
-    next();
-  });
+    case error.code === "EEXIST":
+      // File already exists, send a 400 Bad Request response
+      res.locals.errorType = "File Exists Error";
+      res.locals.errorDescription = "A file with the same name already exists";
+      break;
+
+    case error.code === "EACCES" || error.code === "EPERM":
+      // Handle permission issues
+      res.status(403).json({ error: "Permission Denied" });
+      res.locals.errorType = "Permission Denied Error";
+      res.locals.errorDescription = "Permission Denied";
+      break;
+
+    default:
+      // Other errors
+      res.status(500).json({ error: "Internal Server Error" });
+
+      res.locals.errorType = "Internal Server Error";
+      res.locals.errorDescription = "Unhandled error";
+      break;
+  }
+
+  res.locals.fullError = error.stack || error.message;
+  next();
+});
 //App listener
 app.listen(port, () => {
   console.log(`Server running on port http://localhost:${port}`);
