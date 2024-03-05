@@ -4,6 +4,7 @@ const fs = require("fs");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
+const { body, validationResult } = require("express-validator");
 
 const app = express();
 const port = 3000;
@@ -51,6 +52,27 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
 
 //GET endpoint that fetches the list of files and render them into a template
+
+const createFileValidator = [
+  body("filename").notEmpty().withMessage("Filename is required"),
+  body("filename")
+    .matches(/^[a-zA-Z0-9_-]+$/)
+    .withMessage(
+      "Special characters in filename. Only alphanumeric, underscore, and hyphen are allowed."
+    ),
+];
+
+// Custom validation middleware for update endpoint
+const updateFileValidator = [
+  body("newFilename").notEmpty().withMessage("New filename is required"),
+  body("newFilename")
+    .matches(/^[a-zA-Z0-9_-]+$/)
+    .withMessage(
+      "Special characters in filename. Only alphanumeric, underscore, and hyphen are allowed."
+    ),
+];
+
+
 app.get("/", async (req, res, next) => {
   try {
     const directoryPath = path.join(__dirname, "Data");
@@ -89,25 +111,19 @@ app.get("/create", (req, res) => {
 });
 
 //Post endpoint that creates file in the Data folder from the body of the request
-app.post("/create", async (req, res, next) => {
+app.post("/create", createFileValidator, async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array().map(error => error.msg) });
+  }
+
   try {
     const { filename, content } = req.body;
-    //Checks if filename is entered
-    if (!filename) {
-      return res.status(400).json({ error: "filename is required" });
-    }
-    //Checks for special characters and append .txt extension
-    if (!/^[a-zA-Z0-9_-]+$/.test(filename)) {
-      throw {
-        specialError: true,
-        message:
-          "Special characters in filename. Only alphanumeric, underscore, and hyphen are allowed.",
-      };
-    }
+
     const fixedFileName = `${filename}.txt`;
 
     const filePath = path.join(__dirname, "Data", fixedFileName);
-    // Write the content to the file
+
     await fs.promises.writeFile(filePath, content, "utf-8");
 
     res.redirect("/");
@@ -147,34 +163,22 @@ app.get("/update/:filename", (req, res) => {
   }
 });
 //Update Filename from body request
-app.put("/update/:filename", async (req, res, next) => {
+app.put("/update/:filename", updateFileValidator, async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { newFilename } = req.body;
     const filename = req.params.filename;
 
-    // Checks if the new filename is entered
-    if (!newFilename) {
-      return res.status(400).json({ error: "New filename is required" });
-    }
-
-    // Checks for special characters in the new filename and appends .txt extension
-    if (!/^[a-zA-Z0-9_-]+$/.test(newFilename)) {
-      throw {
-        specialError: true,
-        message:
-          "Special characters in filename. Only alphanumeric, underscore, and hyphen are allowed.",
-      };
-    }
     const fixedNewFilename = `${newFilename}.txt`;
 
     const filePath = path.join(__dirname, "Data", filename);
     const newFilePath = path.join(__dirname, "Data", fixedNewFilename);
-    await fs.promises
-      .access(filePath)
-      .then(() => true)
-      .catch(() => false);
 
-    // Rename the file
+    await fs.promises.access(filePath);
     await fs.promises.rename(filePath, newFilePath);
 
     res.status(200).json({ message: "File updated successfully" });
@@ -210,12 +214,6 @@ app.get('/download/:filename', async (req, res, next) => {
 
 app.use((error, req, res, next) => {
   switch (true) {
-    case error.specialError:
-      // Handle special character error
-      res.locals.errorType = "Special Character Error";
-      res.locals.errorDescription = error.message;
-      break;
-
     case error.code === "EMOENT":
       res.locals.errorType = "File Doesnt exist Error";
       res.locals.errorDescription = "file Doesnt exist ";

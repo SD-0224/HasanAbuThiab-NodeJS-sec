@@ -37,3 +37,33 @@ async function updateFile(filename) {
         // Handle errors as needed
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const filenameInput = document.getElementById('filename');
+  
+    filenameInput.addEventListener('input', function () {
+      const value = this.value.trim();
+      const isValid = /^[a-zA-Z0-9_-]+$/.test(value);
+  
+      if (!isValid) {
+        this.setCustomValidity('Only use letters, numbers, underscores, and hyphens.');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const filenameInput = document.getElementById('newFilename');
+  
+    filenameInput.addEventListener('input', function () {
+      const value = this.value.trim();
+      const isValid = /^[a-zA-Z0-9_-]+$/.test(value);
+  
+      if (!isValid) {
+        this.setCustomValidity('Only use letters, numbers, underscores, and hyphens.');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+  });
